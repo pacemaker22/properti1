@@ -1,0 +1,12 @@
+node_modules
+dist
+*.local
+*.tsbuildinfo
+vite.config.js
+vite.config.d.ts
+.DS_Store
+Properti1-DESIGN.md 
+Properti1-PLANNING.md 
+Properti1-PRD.md 
+.env
+.env.local
