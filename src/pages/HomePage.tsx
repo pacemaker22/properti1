@@ -5,6 +5,10 @@ import { CtaBanner } from '../components/CtaBanner'
 import { FilterBar } from '../components/FilterBar'
 import { Hero } from '../components/Hero'
 import { ListingCard } from '../components/ListingCard'
+import { ListingGridSkeleton } from '../components/ListingCardSkeleton'
+import { JsonLd } from '../components/JsonLd'
+import { Seo } from '../components/Seo'
+import { HOME_DESCRIPTION, HOME_TITLE, websiteJsonLd } from '../lib/seo'
 import { initialFilters, matchesFilters, sortProperties, type Filters } from '../lib/filters'
 import { useListings } from '../lib/listings'
 import type { SortOption } from '../types/property'
@@ -70,6 +74,8 @@ export function HomePage() {
 
   return (
     <>
+      <Seo title={HOME_TITLE} description={HOME_DESCRIPTION} path="/" />
+      <JsonLd data={websiteJsonLd()} />
       <Hero query={query} onQueryChange={setQuery} onSearch={scrollToList} />
 
       <section className="border-b border-slate-200 bg-white">
@@ -183,18 +189,7 @@ export function HomePage() {
             </button>
           </div>
         ) : loading ? (
-          <div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-3" aria-label="Memuat properti" role="status">
-            {Array.from({ length: 6 }, (_, index) => (
-              <div key={index} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card">
-                <div className="aspect-[4/3] animate-pulse bg-slate-200" />
-                <div className="space-y-3 p-4">
-                  <div className="h-5 w-2/3 animate-pulse rounded bg-slate-200" />
-                  <div className="h-4 w-full animate-pulse rounded bg-slate-200" />
-                  <div className="h-4 w-1/2 animate-pulse rounded bg-slate-200" />
-                </div>
-              </div>
-            ))}
-          </div>
+          <ListingGridSkeleton count={6} className="mt-7" />
         ) : filteredProperties.length > 0 ? (
           <div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {filteredProperties.map((property) => (

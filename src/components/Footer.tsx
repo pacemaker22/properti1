@@ -41,6 +41,16 @@ export function Footer() {
                 <Heart size={15} className="text-heart-active" aria-hidden="true" /> Favorit Saya
               </Link>
             </li>
+            <li>
+              <Link to="/syarat-ketentuan" className="transition hover:text-primary-500">
+                Syarat &amp; Ketentuan
+              </Link>
+            </li>
+            <li>
+              <Link to="/kebijakan-privasi" className="transition hover:text-primary-500">
+                Kebijakan Privasi
+              </Link>
+            </li>
           </ul>
         </div>
 

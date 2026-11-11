@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="properti1.com - Cari Rumah Impianmu">
+  <title>properti1.com - Cari Rumah Impianmu</title>
+  <rect width="1200" height="630" fill="#0F172A"/>
+  <circle cx="1010" cy="120" r="190" fill="#16A34A" opacity="0.18"/>
+  <circle cx="180" cy="560" r="150" fill="#16A34A" opacity="0.12"/>
+  <rect x="80" y="96" width="104" height="104" rx="28" fill="#16A34A"/>
+  <path d="M110 150 L132 130 L154 150 M114 150 L114 172 L150 172 L150 150" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="212" y="176" font-family="Plus Jakarta Sans, Inter, system-ui, sans-serif" font-size="64" font-weight="800" fill="#FFFFFF">properti1<tspan fill="#16A34A">.com</tspan></text>
+  <text x="80" y="330" font-family="Plus Jakarta Sans, Inter, system-ui, sans-serif" font-size="84" font-weight="800" fill="#FFFFFF">Cari Rumah Impianmu</text>
+  <text x="80" y="398" font-family="Plus Jakarta Sans, Inter, system-ui, sans-serif" font-size="38" font-weight="500" fill="#94A3B8">Jual &amp; Beli Rumah, Apartemen, Tanah, Ruko di Indonesia</text>
+  <rect x="80" y="452" width="332" height="76" rx="20" fill="#16A34A"/>
+  <text x="246" y="501" text-anchor="middle" font-family="Plus Jakarta Sans, Inter, system-ui, sans-serif" font-size="30" font-weight="700" fill="#FFFFFF">Langsung Chat WhatsApp</text>
+  <text x="80" y="592" font-family="Plus Jakarta Sans, Inter, system-ui, sans-serif" font-size="30" font-weight="500" fill="#94A3B8">Jakarta · Bekasi · Tangerang · Depok · Bogor · Bandung</text>
+</svg>

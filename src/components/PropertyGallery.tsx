@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ChevronLeft, ChevronRight, Expand, X } from 'lucide-react'
+import { HERO_IMAGE_SIZES, HERO_IMAGE_WIDTHS, CARD_IMAGE_WIDTHS } from '../lib/image'
 import { statusLabels } from '../lib/format'
 import type { Property } from '../types/property'
 import { PropertyImage } from './PropertyImage'
@@ -20,7 +21,7 @@ export function PropertyGallery({ property }: PropertyGalleryProps) {
       <div className="relative -mx-4 lg:mx-0">
         <div className="flex snap-x snap-mandatory overflow-x-auto no-scrollbar lg:hidden">
           {property.photos.map((photo, index) => (
-            <PropertyImage key={photo} src={photo} alt={`${property.title} — foto ${index + 1}`} loading={index === 0 ? 'eager' : 'lazy'} className="aspect-[4/3] w-full shrink-0 snap-center bg-slate-100 object-cover" />
+            <PropertyImage key={photo} src={photo} alt={`${property.title} — foto ${index + 1}`} loading={index === 0 ? 'eager' : 'lazy'} widths={HERO_IMAGE_WIDTHS} sizes={HERO_IMAGE_SIZES} className="aspect-[4/3] w-full shrink-0 snap-center bg-slate-100 object-cover" />
           ))}
         </div>
         {property.status === 'terjual' && (
@@ -32,7 +33,7 @@ export function PropertyGallery({ property }: PropertyGalleryProps) {
 
       <div className="hidden lg:block">
         <button type="button" onClick={() => setExpanded(true)} aria-label={`Perbesar foto ${activePhoto + 1}`} className="group relative block w-full overflow-hidden rounded-2xl bg-slate-100 shadow-card">
-          <PropertyImage src={property.photos[activePhoto]} alt={`${property.title} — foto ${activePhoto + 1}`} loading="eager" className="aspect-video w-full object-cover transition duration-300 group-hover:scale-[1.02]" />
+          <PropertyImage src={property.photos[activePhoto]} alt={`${property.title} — foto ${activePhoto + 1}`} loading="eager" widths={HERO_IMAGE_WIDTHS} sizes={HERO_IMAGE_SIZES} className="aspect-video w-full object-cover transition duration-300 group-hover:scale-[1.02]" />
           <span className="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/95 text-navy shadow-sm"><Expand size={19} aria-hidden="true" /></span>
           {property.status === 'terjual' && <span className="absolute inset-0 flex items-center justify-center bg-slate-900/45 text-2xl font-extrabold tracking-widest text-white">TERJUAL</span>}
         </button>
@@ -40,7 +41,7 @@ export function PropertyGallery({ property }: PropertyGalleryProps) {
         <div className="mt-3 grid grid-cols-4 gap-3">
           {property.photos.map((photo, index) => (
             <button key={photo} type="button" onClick={() => setActivePhoto(index)} aria-label={`Tampilkan foto ${index + 1}`} className={`overflow-hidden rounded-xl border-2 bg-slate-100 transition ${activePhoto === index ? 'border-primary-500' : 'border-transparent hover:border-slate-300'}`}>
-              <PropertyImage src={photo} alt={`Miniatur ${property.title} ${index + 1}`} className="aspect-square w-full object-cover" />
+              <PropertyImage src={photo} alt={`Miniatur ${property.title} ${index + 1}`} widths={CARD_IMAGE_WIDTHS} sizes="160px" className="aspect-square w-full object-cover" />
             </button>
           ))}
         </div>

@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
   AlertCircle,
@@ -19,16 +19,20 @@ import {
   MessageCircle,
   PlugZap,
   RotateCcw,
-  Share2,
   ShieldCheck,
 } from 'lucide-react'
 import { AgentCard } from '../components/AgentCard'
 import { FavoriteButton } from '../components/FavoriteButton'
 import { ListingCard } from '../components/ListingCard'
+import { JsonLd } from '../components/JsonLd'
 import { PropertyGallery } from '../components/PropertyGallery'
+import { ReportModal } from '../components/ReportModal'
+import { Seo } from '../components/Seo'
+import { ShareButton } from '../components/ShareButton'
 import { getWhatsAppUrl } from '../lib/contact'
 import { formatArea, formatDate, formatRupiah, statusLabels, typeLabels } from '../lib/format'
 import { getSimilarProperties } from '../lib/properties'
+import { listingMetaDescription, listingUrl, propertyJsonLd, SITE_NAME } from '../lib/seo'
 import { useListings } from '../lib/listings'
 import type { Property } from '../types/property'
 
@@ -36,13 +40,8 @@ export function DetailPage() {
   const { id } = useParams()
   const { getListing, listings, loading, error, refreshListings } = useListings()
   const property = getListing(id)
-
-  useEffect(() => {
-    if (property) document.title = `${property.title} - properti1.com`
-    return () => {
-      document.title = 'Cari Rumah Impianmu - properti1.com'
-    }
-  }, [property])
+  const [reportOpen, setReportOpen] = useState(false)
+  const seoTitle = property ? property.title + ' - ' + SITE_NAME : 'Properti - ' + SITE_NAME
 
   if (loading && !property) {
     return (
@@ -108,23 +107,19 @@ export function DetailPage() {
 
   const whatsappUrl = getWhatsAppUrl(property)
   const similarProperties = getSimilarProperties(property, 3, listings)
-
-  const shareProperty = async () => {
-    const url = window.location.href
-    const shareData = {
-      title: property.title,
-      text: `${property.title} - ${formatRupiah(property.price)} di properti1.com`,
-      url,
-    }
-    if (navigator.share) {
-      await navigator.share(shareData).catch(() => undefined)
-      return
-    }
-    await navigator.clipboard?.writeText(url)
-  }
+  const seoDescription = listingMetaDescription(property)
 
   return (
     <>
+      <Seo
+        title={seoTitle}
+        description={seoDescription}
+        path={'/properti/' + (id ?? '')}
+        image={property.photos[0]}
+        type="article"
+      />
+      <JsonLd data={propertyJsonLd(property)} />
+
       <div className="border-b border-slate-200 bg-white">
         <div className="container-page py-4">
           <nav className="flex items-center gap-1.5 overflow-hidden text-xs font-medium text-text-grey sm:text-sm" aria-label="Navigasi breadcrumbs">
@@ -146,14 +141,7 @@ export function DetailPage() {
             <ArrowLeft size={17} aria-hidden="true" /> Kembali ke daftar properti
           </Link>
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={shareProperty}
-              aria-label="Bagikan properti ini"
-              className="inline-flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-navy transition hover:border-primary-500 hover:text-primary-600"
-            >
-              <Share2 size={17} aria-hidden="true" /> <span className="hidden sm:inline">Bagikan</span>
-            </button>
+            <ShareButton property={property} />
             <FavoriteButton
               propertyId={property.id}
               propertyTitle={property.title}
@@ -192,14 +180,7 @@ export function DetailPage() {
             <p className="mt-5 text-xs text-slate-400">Diterbitkan {formatDate(property.created_at)}</p>
             <button
               type="button"
-              onClick={() => {
-                const report = `Halo, saya ingin melaporkan iklan "${property.title}" (${window.location.href}).`
-                window.open(
-                  `https://wa.me/6281234567890?text=${encodeURIComponent(report)}`,
-                  '_blank',
-                  'noopener,noreferrer',
-                )
-              }}
+              onClick={() => setReportOpen(true)}
               className="mt-4 inline-flex min-h-11 items-center gap-2 text-xs font-semibold text-text-grey transition hover:text-error-red"
             >
               <Flag size={15} aria-hidden="true" /> Laporkan Iklan
@@ -256,6 +237,15 @@ export function DetailPage() {
             </a>
           </div>
         </div>
+      )}
+
+      {reportOpen && (
+        <ReportModal
+          propertyId={property.id}
+          title={property.title}
+          url={listingUrl(property.id)}
+          onClose={() => setReportOpen(false)}
+        />
       )}
     </>
   )

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { ArrowRight, Bath, BedDouble, MapPin, Maximize2 } from 'lucide-react'
 import { formatRupiah, statusLabels } from '../lib/format'
 import { isNewListing } from '../lib/properties'
+import { CARD_IMAGE_SIZES, CARD_IMAGE_WIDTHS } from '../lib/image'
 import type { Property } from '../types/property'
 import { FavoriteButton } from './FavoriteButton'
 import { PropertyImage } from './PropertyImage'
@@ -23,6 +24,8 @@ export function ListingCard({ property }: ListingCardProps) {
         <PropertyImage
           src={property.photos[0]}
           alt={property.title}
+          widths={CARD_IMAGE_WIDTHS}
+          sizes={CARD_IMAGE_SIZES}
           className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
         />
         <div className="absolute left-3 top-3 flex flex-wrap gap-2">

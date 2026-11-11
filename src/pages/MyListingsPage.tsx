@@ -14,12 +14,18 @@ import {
   X,
 } from 'lucide-react'
 import { PropertyImage } from '../components/PropertyImage'
+import { Seo } from '../components/Seo'
+import { ListingRowSkeleton } from '../components/ListingCardSkeleton'
 import { useFavorites } from '../lib/favorites'
 import { formatRupiah, statusLabels } from '../lib/format'
 import { useAuth } from '../lib/auth'
 import { isSupabaseConfigured } from '../lib/supabase'
 import { useListings } from '../lib/listings'
+import { pageTitle } from '../lib/seo'
 import type { Property } from '../types/property'
+
+const MY_LISTINGS_DESCRIPTION =
+  'Kelola iklan properti Anda di properti1.com: edit, hapus, atau tandai properti sebagai terjual.'
 
 export function MyListingsPage() {
   const { myListings, deleteListing, setListingSold, loading, error, refreshListings } = useListings()
@@ -80,6 +86,7 @@ export function MyListingsPage() {
   if (authLoading) {
     return (
       <section className="container-page py-16 text-center" role="status">
+        <Seo title={pageTitle('Iklan Saya')} description={MY_LISTINGS_DESCRIPTION} path="/iklan-saya" noIndex />
         <div className="mx-auto h-12 w-12 animate-pulse rounded-2xl bg-slate-200" />
         <p className="mt-4 text-sm text-text-grey">Memuat akun Anda…</p>
       </section>
@@ -89,6 +96,7 @@ export function MyListingsPage() {
   if (isSupabaseConfigured && !user) {
     return (
       <section className="container-page flex min-h-[60vh] flex-col items-center justify-center py-16 text-center">
+        <Seo title={pageTitle('Iklan Saya')} description={MY_LISTINGS_DESCRIPTION} path="/iklan-saya" noIndex />
         <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-text-grey">
           <LogIn size={28} aria-hidden="true" />
         </span>
@@ -109,6 +117,7 @@ export function MyListingsPage() {
 
   return (
     <section className="container-page py-10 sm:py-12">
+      <Seo title={pageTitle('Iklan Saya')} description={MY_LISTINGS_DESCRIPTION} path="/iklan-saya" noIndex />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-sm font-bold text-primary-600">Kelola properti Anda</p>
@@ -166,11 +175,7 @@ export function MyListingsPage() {
           </button>
         </div>
       ) : loading ? (
-        <div className="mt-6 space-y-4" aria-label="Memuat iklan" role="status">
-          {Array.from({ length: 3 }, (_, index) => (
-            <div key={index} className="h-48 animate-pulse rounded-2xl bg-slate-200" />
-          ))}
-        </div>
+        <ListingRowSkeleton count={3} className="mt-6" />
       ) : sortedListings.length > 0 ? (
         <div className="mt-6 space-y-4">
           {sortedListings.map((listing) => {

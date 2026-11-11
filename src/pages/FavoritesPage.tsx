@@ -2,6 +2,9 @@ import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { AlertCircle, Heart, RotateCcw, Search } from 'lucide-react'
 import { ListingCard } from '../components/ListingCard'
+import { ListingGridSkeleton } from '../components/ListingCardSkeleton'
+import { Seo } from '../components/Seo'
+import { pageTitle } from '../lib/seo'
 import { useFavorites } from '../lib/favorites'
 import { useListings } from '../lib/listings'
 
@@ -16,6 +19,12 @@ export function FavoritesPage() {
 
   return (
     <section className="container-page py-10 sm:py-12">
+      <Seo
+        title={pageTitle('Favorit Saya')}
+        description="Daftar properti yang Anda simpan di properti1.com untuk dibandingkan sebelum menghubungi penjual lewat WhatsApp."
+        path="/favorit"
+        noIndex
+      />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-sm font-bold text-primary-600">Simpan untuk dibandingkan</p>
@@ -52,17 +61,7 @@ export function FavoritesPage() {
           </button>
         </div>
       ) : loading ? (
-        <div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-3" aria-label="Memuat favorit" role="status">
-          {Array.from({ length: 3 }, (_, index) => (
-            <div key={index} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card">
-              <div className="aspect-[4/3] animate-pulse bg-slate-200" />
-              <div className="space-y-3 p-4">
-                <div className="h-5 w-2/3 animate-pulse rounded bg-slate-200" />
-                <div className="h-4 w-full animate-pulse rounded bg-slate-200" />
-              </div>
-            </div>
-          ))}
-        </div>
+        <ListingGridSkeleton count={3} className="mt-7" />
       ) : savedProperties.length > 0 ? (
         <div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {savedProperties.map((property) => (
