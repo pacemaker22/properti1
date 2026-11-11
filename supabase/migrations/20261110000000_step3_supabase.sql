@@ -64,6 +64,15 @@ create policy "Sellers can delete their own properties"
   to authenticated
   using (auth.uid() = seller_id);
 
+-- Sellers must also be able to read their own listings again after signing in.
+-- Without this, editing an existing listing fails: PostgREST returns the updated
+-- row (UPDATE ... RETURNING) and the public read policy alone does not satisfy it.
+drop policy if exists "Sellers can read their own properties" on public.properties;
+create policy "Sellers can read their own properties"
+  on public.properties for select
+  to authenticated
+  using (auth.uid() = seller_id);
+
 create index if not exists properties_created_at_idx on public.properties (created_at desc);
 create index if not exists properties_seller_id_idx on public.properties (seller_id);
 create index if not exists properties_city_type_status_idx on public.properties (city, type, status);
@@ -111,7 +120,7 @@ values (
   'property-photos',
   true,
   5242880,
-  array['image/jpeg', 'image/png']
+  array['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
 )
 on conflict (id) do update set
   public = excluded.public,
