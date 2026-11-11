@@ -1,15 +1,14 @@
 import { useState, type FormEvent } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
-import { Building2, Heart, Menu, Search, X } from 'lucide-react'
-import { getPlatformWhatsAppUrl, LISTING_ENQUIRY_MESSAGE } from '../lib/contact'
+import { Building2, ClipboardList, Heart, LogIn, LogOut, Menu, Search, X } from 'lucide-react'
+import { useAuth } from '../lib/auth'
 import { useFavorites } from '../lib/favorites'
-
-const platformWhatsAppUrl = getPlatformWhatsAppUrl(LISTING_ENQUIRY_MESSAGE)
 
 export function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [searchValue, setSearchValue] = useState('')
   const { count } = useFavorites()
+  const { user, openAuthModal, signOut } = useAuth()
   const navigate = useNavigate()
 
   const handleSearch = (event: FormEvent<HTMLFormElement>) => {
@@ -59,14 +58,41 @@ export function Header() {
               </span>
             )}
           </NavLink>
-          <a
-            href={platformWhatsAppUrl}
-            target="_blank"
-            rel="noreferrer"
+          {user && (
+            <NavLink
+              to="/iklan-saya"
+              className="inline-flex h-11 items-center gap-2 rounded-xl border border-slate-200 px-3 text-sm font-semibold text-navy transition hover:border-primary-500 hover:text-primary-600"
+            >
+              <ClipboardList size={17} aria-hidden="true" />
+              Iklan Saya
+            </NavLink>
+          )}
+          {user ? (
+            <button
+              type="button"
+              onClick={() => void signOut()}
+              className="inline-flex h-11 items-center gap-2 rounded-xl border border-slate-200 px-3 text-sm font-semibold text-navy transition hover:border-primary-500 hover:text-primary-600"
+              title={user.email}
+            >
+              <LogOut size={17} aria-hidden="true" />
+              Keluar
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => openAuthModal('login')}
+              className="inline-flex h-11 items-center gap-2 rounded-xl border border-slate-200 px-3 text-sm font-semibold text-navy transition hover:border-primary-500 hover:text-primary-600"
+            >
+              <LogIn size={17} aria-hidden="true" />
+              Masuk
+            </button>
+          )}
+          <Link
+            to="/tambah-iklan"
             className="inline-flex h-11 items-center rounded-xl bg-primary-500 px-4 text-sm font-bold text-white transition hover:bg-primary-600"
           >
             Pasang Iklan Gratis
-          </a>
+          </Link>
         </nav>
 
         <button
@@ -112,14 +138,50 @@ export function Header() {
               )}
             </NavLink>
 
-            <a
-              href={platformWhatsAppUrl}
-              target="_blank"
-              rel="noreferrer"
+            {user && (
+              <NavLink
+                to="/iklan-saya"
+                onClick={() => setMenuOpen(false)}
+                className="inline-flex h-12 items-center gap-2 rounded-xl border border-slate-200 px-4 text-sm font-semibold text-navy"
+              >
+                <ClipboardList size={18} aria-hidden="true" />
+                Iklan Saya
+              </NavLink>
+            )}
+
+            {user ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuOpen(false)
+                  void signOut()
+                }}
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 text-sm font-bold text-navy"
+              >
+                <LogOut size={17} aria-hidden="true" />
+                Keluar
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuOpen(false)
+                  openAuthModal('login')
+                }}
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 text-sm font-bold text-navy"
+              >
+                <LogIn size={17} aria-hidden="true" />
+                Masuk
+              </button>
+            )}
+
+            <Link
+              to="/tambah-iklan"
+              onClick={() => setMenuOpen(false)}
               className="inline-flex h-12 items-center justify-center rounded-xl bg-primary-500 px-4 text-sm font-bold text-white"
             >
               Pasang Iklan Gratis
-            </a>
+            </Link>
           </nav>
         </div>
       )}

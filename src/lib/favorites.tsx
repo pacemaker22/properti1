@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useListings } from './listings'
 
 const STORAGE_KEY = 'properti1:favorites'
 
@@ -20,13 +21,27 @@ interface FavoritesContextValue {
   count: number
   isFavorite: (propertyId: string) => boolean
   toggleFavorite: (propertyId: string) => void
+  removeFavorite: (propertyId: string) => void
   clearFavorites: () => void
 }
 
 const FavoritesContext = createContext<FavoritesContextValue | null>(null)
 
 export function FavoritesProvider({ children }: { children: ReactNode }) {
+  const { listings, loading, error } = useListings()
   const [favoriteIds, setFavoriteIds] = useState<string[]>(readStoredFavorites)
+  const listingIds = useMemo(
+    () => new Set(listings.map((listing) => listing.id)),
+    [listings],
+  )
+
+  useEffect(() => {
+    if (loading || error) return
+    setFavoriteIds((current) => {
+      const validIds = current.filter((id) => listingIds.has(id))
+      return validIds.length === current.length ? current : validIds
+    })
+  }, [listingIds, loading, error])
 
   useEffect(() => {
     try {
@@ -50,6 +65,8 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
       count: favoriteIds.length,
       isFavorite: (propertyId: string) => favoriteIds.includes(propertyId),
       toggleFavorite,
+      removeFavorite: (propertyId: string) =>
+        setFavoriteIds((current) => current.filter((id) => id !== propertyId)),
       clearFavorites: () => setFavoriteIds([]),
     }),
     [favoriteIds, toggleFavorite],

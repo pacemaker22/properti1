@@ -21,6 +21,7 @@ export const typeLabels = {
   ruko: 'Ruko',
   kost: 'Kost',
   villa: 'Villa',
+  lainnya: 'Lainnya',
 } as const
 
 export const statusLabels = {

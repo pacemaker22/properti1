@@ -1,26 +1,24 @@
-import propertiesData from '../data/properties.json'
 import type { Property } from '../types/property'
 
-export const properties = propertiesData as Property[]
-
-export const cities = [...new Set(properties.map((property) => property.city))].sort()
+export const listingCities = [
+  'Jakarta Selatan',
+  'Jakarta Timur',
+  'Jakarta Barat',
+  'Jakarta Utara',
+  'Jakarta Pusat',
+  'Bekasi',
+  'Tangerang',
+  'Depok',
+  'Bogor',
+  'Bandung',
+  'Surabaya',
+]
 
 export const NEW_LISTING_WINDOW_DAYS = 7
 
-const newestListingTimestamp = Math.max(
-  ...properties.map((property) => new Date(property.created_at).getTime()),
-)
-
-/**
- * The newest listing in the mock dataset is treated as "today" so the "Baru"
- * badge stays meaningful no matter when the demo is opened.
- */
 export const isNewListing = (property: Property) =>
-  newestListingTimestamp - new Date(property.created_at).getTime() <
+  Date.now() - new Date(property.created_at).getTime() <
   NEW_LISTING_WINDOW_DAYS * 24 * 60 * 60 * 1000
-
-export const getPropertyById = (id?: string) =>
-  properties.find((property) => property.id === id)
 
 const PRICE_BANDS = [
   { min: 0, max: 500_000_000 },
@@ -29,8 +27,12 @@ const PRICE_BANDS = [
   { min: 2_000_000_000, max: Number.POSITIVE_INFINITY },
 ]
 
-export const getSimilarProperties = (property: Property, count = 3) => {
-  const candidates = properties.filter(
+export const getSimilarProperties = (
+  property: Property,
+  count = 3,
+  source: Property[] = [],
+) => {
+  const candidates = source.filter(
     (item) => item.id !== property.id && item.status !== 'terjual',
   )
 

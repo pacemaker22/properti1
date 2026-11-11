@@ -60,9 +60,11 @@ export function FilterBar({ filters, cities, onChange, onReset, mobile = false, 
             className="field-control"
           >
             <option value="">Semua tipe</option>
-            {(Object.keys(typeLabels) as PropertyType[]).map((type) => (
-              <option key={type} value={type}>{typeLabels[type]}</option>
-            ))}
+            {(Object.keys(typeLabels) as PropertyType[])
+              .filter((type) => type !== 'lainnya')
+              .map((type) => (
+                <option key={type} value={type}>{typeLabels[type]}</option>
+              ))}
           </select>
         </div>
         <div>

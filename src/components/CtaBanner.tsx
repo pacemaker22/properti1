@@ -1,7 +1,5 @@
+import { Link } from 'react-router-dom'
 import { ArrowRight, Clock } from 'lucide-react'
-import { getPlatformWhatsAppUrl, LISTING_ENQUIRY_MESSAGE } from '../lib/contact'
-
-const platformWhatsAppUrl = getPlatformWhatsAppUrl(LISTING_ENQUIRY_MESSAGE)
 
 export function CtaBanner() {
   return (
@@ -14,14 +12,12 @@ export function CtaBanner() {
             Pasang Iklan Gratis - 3 Menit
           </p>
         </div>
-        <a
-          href={platformWhatsAppUrl}
-          target="_blank"
-          rel="noreferrer"
+        <Link
+          to="/tambah-iklan"
           className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-xl bg-primary-500 px-5 text-sm font-bold text-white transition hover:bg-primary-600"
         >
           Pasang Iklan Gratis <ArrowRight size={18} aria-hidden="true" />
-        </a>
+        </Link>
       </div>
     </section>
   )

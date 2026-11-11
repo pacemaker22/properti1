@@ -30,5 +30,11 @@ export const getPhoneUrl = (property: Property) => `tel:+${normalizeWhatsAppNumb
 export const getPlatformWhatsAppUrl = (message: string) =>
   `https://wa.me/${PLATFORM_WHATSAPP}?text=${encodeURIComponent(message)}`
 
+export const isValidWhatsAppNumber = (number: string) => {
+  const digits = number.replace(/\D/g, '')
+  if (!/^(0|62)\d+$/.test(digits)) return false
+  return digits.length >= 10 && digits.length <= 13
+}
+
 export const LISTING_ENQUIRY_MESSAGE =
   'Halo, saya ingin memasang iklan gratis di properti1.com. Boleh dibantu?'

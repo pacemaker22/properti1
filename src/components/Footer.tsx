@@ -32,9 +32,9 @@ export function Footer() {
               </Link>
             </li>
             <li>
-              <a href={platformWhatsAppUrl} target="_blank" rel="noreferrer" className="transition hover:text-primary-500">
+              <Link to="/tambah-iklan" className="transition hover:text-primary-500">
                 Pasang Iklan Gratis
-              </a>
+              </Link>
             </li>
             <li>
               <Link to="/favorit" className="inline-flex items-center gap-1.5 transition hover:text-primary-500">

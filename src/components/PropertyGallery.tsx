@@ -40,7 +40,7 @@ export function PropertyGallery({ property }: PropertyGalleryProps) {
         <div className="mt-3 grid grid-cols-4 gap-3">
           {property.photos.map((photo, index) => (
             <button key={photo} type="button" onClick={() => setActivePhoto(index)} aria-label={`Tampilkan foto ${index + 1}`} className={`overflow-hidden rounded-xl border-2 bg-slate-100 transition ${activePhoto === index ? 'border-primary-500' : 'border-transparent hover:border-slate-300'}`}>
-              <PropertyImage src={photo} alt={`Thumbnail ${property.title} ${index + 1}`} className="aspect-square w-full object-cover" />
+              <PropertyImage src={photo} alt={`Miniatur ${property.title} ${index + 1}`} className="aspect-square w-full object-cover" />
             </button>
           ))}
         </div>

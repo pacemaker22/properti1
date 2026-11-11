@@ -17,7 +17,7 @@ const getInitials = (name: string) =>
 export function AgentAvatar({ property, className = 'h-14 w-14' }: AgentAvatarProps) {
   const [photoFailed, setPhotoFailed] = useState(false)
 
-  if (photoFailed) {
+  if (!property.agent_photo || photoFailed) {
     return (
       <span
         aria-hidden="true"

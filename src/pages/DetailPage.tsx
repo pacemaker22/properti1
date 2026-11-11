@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
+  AlertCircle,
   ArrowLeft,
   Bath,
   BedDouble,
@@ -17,6 +18,7 @@ import {
   Maximize2,
   MessageCircle,
   PlugZap,
+  RotateCcw,
   Share2,
   ShieldCheck,
 } from 'lucide-react'
@@ -26,12 +28,14 @@ import { ListingCard } from '../components/ListingCard'
 import { PropertyGallery } from '../components/PropertyGallery'
 import { getWhatsAppUrl } from '../lib/contact'
 import { formatArea, formatDate, formatRupiah, statusLabels, typeLabels } from '../lib/format'
-import { getPropertyById, getSimilarProperties } from '../lib/properties'
+import { getSimilarProperties } from '../lib/properties'
+import { useListings } from '../lib/listings'
 import type { Property } from '../types/property'
 
 export function DetailPage() {
   const { id } = useParams()
-  const property = getPropertyById(id)
+  const { getListing, listings, loading, error, refreshListings } = useListings()
+  const property = getListing(id)
 
   useEffect(() => {
     if (property) document.title = `${property.title} - properti1.com`
@@ -39,6 +43,35 @@ export function DetailPage() {
       document.title = 'Cari Rumah Impianmu - properti1.com'
     }
   }, [property])
+
+  if (loading && !property) {
+    return (
+      <section className="container-page py-16" aria-label="Memuat detail properti" role="status">
+        <div className="aspect-video animate-pulse rounded-2xl bg-slate-200" />
+        <div className="mt-6 grid gap-6 lg:grid-cols-[1.6fr_1fr]">
+          <div className="h-64 animate-pulse rounded-2xl bg-slate-200" />
+          <div className="h-64 animate-pulse rounded-2xl bg-slate-200" />
+        </div>
+      </section>
+    )
+  }
+
+  if (error && !property) {
+    return (
+      <section className="container-page flex min-h-[60vh] flex-col items-center justify-center py-20 text-center">
+        <AlertCircle size={36} className="text-error-red" aria-hidden="true" />
+        <h1 className="mt-4 text-3xl font-bold text-navy">Gagal memuat properti</h1>
+        <p className="mt-3 max-w-lg text-text-grey">{error}</p>
+        <button
+          type="button"
+          onClick={() => void refreshListings()}
+          className="mt-6 inline-flex h-12 items-center gap-2 rounded-xl bg-primary-500 px-5 text-sm font-bold text-white transition hover:bg-primary-600"
+        >
+          <RotateCcw size={17} aria-hidden="true" /> Coba Lagi
+        </button>
+      </section>
+    )
+  }
 
   if (!property) {
     return (
@@ -74,7 +107,7 @@ export function DetailPage() {
   ]
 
   const whatsappUrl = getWhatsAppUrl(property)
-  const similarProperties = getSimilarProperties(property, 3)
+  const similarProperties = getSimilarProperties(property, 3, listings)
 
   const shareProperty = async () => {
     const url = window.location.href

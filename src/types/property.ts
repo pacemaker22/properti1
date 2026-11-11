@@ -1,4 +1,11 @@
-export type PropertyType = 'rumah' | 'apartemen' | 'tanah' | 'ruko' | 'kost' | 'villa'
+export type PropertyType =
+  | 'rumah'
+  | 'apartemen'
+  | 'tanah'
+  | 'ruko'
+  | 'kost'
+  | 'villa'
+  | 'lainnya'
 export type PropertyStatus = 'dijual' | 'disewa' | 'terjual'
 
 export interface Property {
@@ -24,6 +31,8 @@ export interface Property {
   agent_name: string
   agent_photo: string
   whatsapp: string
+  private_address?: string
+  seller_id?: string | null
   is_sold: boolean
   is_featured: boolean
   view_count: number

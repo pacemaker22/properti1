@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { ChevronDown, Home, RotateCcw, SlidersHorizontal } from 'lucide-react'
+import { AlertCircle, ChevronDown, Home, RotateCcw, SlidersHorizontal } from 'lucide-react'
 import { CtaBanner } from '../components/CtaBanner'
 import { FilterBar } from '../components/FilterBar'
 import { Hero } from '../components/Hero'
 import { ListingCard } from '../components/ListingCard'
 import { initialFilters, matchesFilters, sortProperties, type Filters } from '../lib/filters'
-import { cities, properties } from '../lib/properties'
+import { useListings } from '../lib/listings'
 import type { SortOption } from '../types/property'
 
 const quickFilters = [
@@ -30,6 +30,7 @@ export function HomePage() {
   const [filters, setFilters] = useState<Filters>(initialFilters)
   const [sort, setSort] = useState<SortOption>('terbaru')
   const [filterOpen, setFilterOpen] = useState(false)
+  const { listings, loading, error, refreshListings } = useListings()
 
   const query = searchParams.get('q') ?? ''
 
@@ -41,8 +42,12 @@ export function HomePage() {
   }
 
   const filteredProperties = useMemo(
-    () => sortProperties(properties.filter((property) => matchesFilters(property, filters, query)), sort),
-    [filters, query, sort],
+    () => sortProperties(listings.filter((property) => matchesFilters(property, filters, query)), sort),
+    [filters, listings, query, sort],
+  )
+  const availableCities = useMemo(
+    () => [...new Set(listings.map((property) => property.city))].sort(),
+    [listings],
   )
 
   const activeFilterCount = Object.values(filters).filter(Boolean).length
@@ -90,7 +95,7 @@ export function HomePage() {
       <section className="sticky top-16 z-40 hidden border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur lg:block">
         <div className="container-page py-3">
           <div className="grid grid-cols-[1.1fr_0.9fr_1.2fr_0.9fr_0.9fr_auto] items-end gap-3">
-            <FilterBar filters={filters} cities={cities} onChange={setFilters} onReset={resetFilters} />
+            <FilterBar filters={filters} cities={availableCities} onChange={setFilters} onReset={resetFilters} />
             <div>
               <label htmlFor="desktop-sort" className="field-label">Urutkan</label>
               <select
@@ -115,7 +120,9 @@ export function HomePage() {
             <p className="text-sm font-bold text-primary-600">Pilihan terbaik untuk Anda</p>
             <h2 className="mt-1 text-2xl font-bold text-navy">Properti Pilihan</h2>
             <p className="mt-2 text-sm text-text-grey">
-              Menampilkan <strong className="text-text-dark">{filteredProperties.length} properti</strong> di {locationLabel}
+              {loading
+                ? 'Memuat properti…'
+                : `Menampilkan ${filteredProperties.length} properti di ${locationLabel}`}
             </p>
           </div>
 
@@ -162,7 +169,33 @@ export function HomePage() {
           </div>
         </div>
 
-        {filteredProperties.length > 0 ? (
+        {error ? (
+          <div className="mt-8 rounded-2xl border border-error-red/30 bg-red-50 px-6 py-10 text-center" role="alert">
+            <AlertCircle size={32} className="mx-auto text-error-red" aria-hidden="true" />
+            <h3 className="mt-4 text-lg font-bold text-navy">Gagal memuat properti</h3>
+            <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-text-grey">{error}</p>
+            <button
+              type="button"
+              onClick={() => void refreshListings()}
+              className="mt-6 inline-flex h-11 items-center gap-2 rounded-xl bg-primary-500 px-4 text-sm font-bold text-white transition hover:bg-primary-600"
+            >
+              <RotateCcw size={16} aria-hidden="true" /> Coba Lagi
+            </button>
+          </div>
+        ) : loading ? (
+          <div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-3" aria-label="Memuat properti" role="status">
+            {Array.from({ length: 6 }, (_, index) => (
+              <div key={index} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card">
+                <div className="aspect-[4/3] animate-pulse bg-slate-200" />
+                <div className="space-y-3 p-4">
+                  <div className="h-5 w-2/3 animate-pulse rounded bg-slate-200" />
+                  <div className="h-4 w-full animate-pulse rounded bg-slate-200" />
+                  <div className="h-4 w-1/2 animate-pulse rounded bg-slate-200" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : filteredProperties.length > 0 ? (
           <div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {filteredProperties.map((property) => (
               <ListingCard key={property.id} property={property} />
@@ -203,7 +236,7 @@ export function HomePage() {
           <div className="w-full rounded-t-3xl bg-white">
             <FilterBar
               filters={filters}
-              cities={cities}
+              cities={availableCities}
               onChange={setFilters}
               onReset={resetFilters}
               mobile

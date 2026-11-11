@@ -1,16 +1,17 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { Heart, Search } from 'lucide-react'
+import { AlertCircle, Heart, RotateCcw, Search } from 'lucide-react'
 import { ListingCard } from '../components/ListingCard'
 import { useFavorites } from '../lib/favorites'
-import { properties } from '../lib/properties'
+import { useListings } from '../lib/listings'
 
 export function FavoritesPage() {
   const { favoriteIds, clearFavorites } = useFavorites()
+  const { listings, loading, error, refreshListings } = useListings()
 
   const savedProperties = useMemo(
-    () => properties.filter((property) => favoriteIds.includes(property.id)),
-    [favoriteIds],
+    () => listings.filter((property) => favoriteIds.includes(property.id)),
+    [favoriteIds, listings],
   )
 
   return (
@@ -37,7 +38,32 @@ export function FavoritesPage() {
         )}
       </div>
 
-      {savedProperties.length > 0 ? (
+      {error ? (
+        <div className="mt-8 rounded-2xl border border-error-red/30 bg-red-50 px-6 py-10 text-center" role="alert">
+          <AlertCircle size={32} className="mx-auto text-error-red" aria-hidden="true" />
+          <h2 className="mt-4 text-lg font-bold text-navy">Gagal memuat favorit</h2>
+          <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-text-grey">{error}</p>
+          <button
+            type="button"
+            onClick={() => void refreshListings()}
+            className="mt-6 inline-flex h-11 items-center gap-2 rounded-xl bg-primary-500 px-4 text-sm font-bold text-white transition hover:bg-primary-600"
+          >
+            <RotateCcw size={16} aria-hidden="true" /> Coba Lagi
+          </button>
+        </div>
+      ) : loading ? (
+        <div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-3" aria-label="Memuat favorit" role="status">
+          {Array.from({ length: 3 }, (_, index) => (
+            <div key={index} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card">
+              <div className="aspect-[4/3] animate-pulse bg-slate-200" />
+              <div className="space-y-3 p-4">
+                <div className="h-5 w-2/3 animate-pulse rounded bg-slate-200" />
+                <div className="h-4 w-full animate-pulse rounded bg-slate-200" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : savedProperties.length > 0 ? (
         <div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {savedProperties.map((property) => (
             <ListingCard key={property.id} property={property} />
