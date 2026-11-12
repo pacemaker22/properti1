@@ -8,7 +8,6 @@ import {
   type ReactNode,
 } from 'react'
 import { useAuth } from './auth'
-import { isSupabaseConfigured } from './supabase'
 
 import {
   createProperty,
@@ -143,7 +142,6 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
   )
 
   const myListings = useMemo(() => {
-    if (!isSupabaseConfigured) return listings
     return user
       ? listings.filter((listing) => listing.seller_id === user.id)
       : []

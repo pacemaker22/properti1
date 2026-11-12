@@ -3,94 +3,17 @@ import {
   PROPERTY_PHOTOS_BUCKET,
   supabase,
 } from './supabase'
-import demoProperties from '../data/properties.json'
 import type { PropertyInsert, PropertyRow, PropertyUpdate } from '../types/database'
 import type { Property, PropertyStatus, PropertyType } from '../types/property'
 
-const demoListings: Property[] = demoProperties.map((property) => ({
-  ...property,
-  type: property.type as PropertyType,
-  status: property.status as PropertyStatus,
-  seller_id: null,
-}))
-
 /**
- * Milestone 2 fallback ("mode lokal").
- *
- * Until the Supabase environment variables are filled in, listings created from
- * the Add Listing form live in localStorage so the seller flow works without a
- * backend. Once Supabase is configured the code below takes the network path and
- * this store is never read, so nothing has to be migrated by hand.
+ * Every buyer-facing read goes through this table with `admin_status = 'approved'`.
+ * The dataset lives in Supabase only - there is no bundled mock file and no
+ * localStorage fallback, so the page always reflects the real database.
  */
-const LOCAL_LISTINGS_KEY = 'properti1:local-listings'
-const LOCAL_OWNER_KEY = 'properti1:local-owner-id'
-
-const localOwnerId = (): string => {
-  if (typeof window === 'undefined') return 'local-owner'
-  try {
-    const stored = window.localStorage.getItem(LOCAL_OWNER_KEY)
-    if (stored) return stored
-    const created = crypto.randomUUID()
-    window.localStorage.setItem(LOCAL_OWNER_KEY, created)
-    return created
-  } catch {
-    return 'local-owner'
-  }
-}
-
-const readLocalListings = (): Property[] => {
-  if (typeof window === 'undefined') return []
-  try {
-    const raw = window.localStorage.getItem(LOCAL_LISTINGS_KEY)
-    if (!raw) return []
-    const parsed: unknown = JSON.parse(raw)
-    return Array.isArray(parsed) ? (parsed as Property[]) : []
-  } catch {
-    return []
-  }
-}
-
-const writeLocalListings = (listings: Property[]) => {
-  if (typeof window === 'undefined') return
-  try {
-    window.localStorage.setItem(LOCAL_LISTINGS_KEY, JSON.stringify(listings))
-  } catch {
-    // Storage can be unavailable (private mode / quota). The in-memory state still works.
-  }
-}
-
-const fileToDataUrl = (file: File) =>
-  new Promise<string>((resolve) => {
-    const reader = new FileReader()
-    reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : '')
-    reader.onerror = () => resolve('')
-    reader.readAsDataURL(file)
-  })
-
-const applyDraft = (property: Property, draft: ListingDraft): Property => ({
-  ...property,
-  title: draft.title.trim(),
-  price: draft.price,
-  type: draft.type,
-  status: draft.status,
-  city: draft.city,
-  district: draft.district.trim(),
-  bedrooms: draft.bedrooms,
-  bathrooms: draft.bathrooms,
-  land_area: draft.landArea,
-  building_area: draft.buildingArea,
-  certificate: draft.certificate,
-  description: draft.description.trim(),
-  agent_name: draft.agentName.trim(),
-  whatsapp: draft.whatsapp.trim(),
-  private_address: draft.privateAddress.trim() || undefined,
-  floors: draft.floors,
-  parking: draft.parking,
-  year_built: draft.yearBuilt,
-  furnished: draft.furnished,
-  electricity: draft.electricity,
-  is_sold: draft.status === 'terjual',
-})
+const PROPERTIES_TABLE = 'properties'
+const APPROVED_STATUS = 'approved'
+const PENDING_STATUS = 'pending'
 
 export interface ListingPhotoInput {
   url: string
@@ -172,6 +95,7 @@ const mapPropertyRow = (
   whatsapp: row.whatsapp,
   private_address: privateAddress || undefined,
   seller_id: row.seller_id,
+  admin_status: row.admin_status ?? 'approved',
   is_sold: row.is_sold,
   is_featured: row.is_featured,
   view_count: row.view_count,
@@ -268,73 +192,15 @@ const ensureConfigured = () => {
   }
 }
 
-const toLocalProperty = async (
-  draft: ListingDraft,
-  id: string,
-  existing?: Property,
-): Promise<Property> => {
-  const photos = await Promise.all(
-    draft.photos.map((photo) => (photo.file ? fileToDataUrl(photo.file) : photo.url)),
-  )
-
-  const base: Property =
-    existing ??
-    ({
-      id,
-      title: '',
-      price: 0,
-      type: draft.type,
-      status: draft.status,
-      city: '',
-      district: '',
-      bedrooms: 0,
-      bathrooms: 0,
-      land_area: 0,
-      building_area: 0,
-      certificate: '',
-      floors: 0,
-      parking: 0,
-      year_built: 0,
-      furnished: false,
-      electricity: 0,
-      description: '',
-      photos: [],
-      agent_name: '',
-      agent_photo: '',
-      whatsapp: '',
-      seller_id: localOwnerId(),
-      is_sold: false,
-      is_featured: false,
-      view_count: 0,
-      created_at: new Date().toISOString(),
-    } satisfies Property)
-
-  return {
-    ...applyDraft(base, draft),
-    id,
-    photos,
-    seller_id: localOwnerId(),
-  }
-}
-
-const upsertLocalListing = (listing: Property) => {
-  const current = readLocalListings()
-  const next = current.some((item) => item.id === listing.id)
-    ? current.map((item) => (item.id === listing.id ? listing : item))
-    : [listing, ...current]
-  writeLocalListings(next)
-}
-
 export const fetchProperties = async (sellerId?: string): Promise<Property[]> => {
-  if (!isSupabaseConfigured) {
-    // Local mode: demo feed plus anything published from this browser.
-    const localListings = readLocalListings()
-    return [...localListings, ...demoListings]
-  }
+  ensureConfigured()
 
+  // Only approved rows are public. The filter is also the database default
+  // (RLS policy hides everything else), this keeps it explicit for the client.
   const { data, error } = await supabase
-    .from('properties')
+    .from(PROPERTIES_TABLE)
     .select('*')
+    .eq('admin_status', APPROVED_STATUS)
     .order('created_at', { ascending: false })
 
   if (error) throw new Error(`Gagal memuat properti: ${error.message}`)
@@ -363,12 +229,6 @@ export const createProperty = async (
   draft: ListingDraft,
   sellerId: string,
 ): Promise<Property> => {
-  if (!isSupabaseConfigured) {
-    const listing = await toLocalProperty(draft, crypto.randomUUID())
-    upsertLocalListing(listing)
-    return listing
-  }
-
   ensureConfigured()
 
   const propertyId = crypto.randomUUID()
@@ -384,10 +244,12 @@ export const createProperty = async (
     photos: urls,
     seller_id: sellerId,
     created_at: new Date().toISOString(),
+    // New listings always wait for admin moderation before they go public.
+    admin_status: PENDING_STATUS,
   }
 
   const { data, error } = await supabase
-    .from('properties')
+    .from(PROPERTIES_TABLE)
     .insert(insert)
     .select('*')
     .single()
@@ -407,7 +269,7 @@ export const createProperty = async (
       })
 
     if (privateError) {
-      await supabase.from('properties').delete().eq('id', propertyId)
+      await supabase.from(PROPERTIES_TABLE).delete().eq('id', propertyId)
       await removeStoredPaths(uploadedPaths)
       throw new Error(`Gagal menyimpan alamat privat: ${privateError.message}`)
     }
@@ -421,12 +283,6 @@ export const updateProperty = async (
   draft: ListingDraft,
   sellerId: string,
 ): Promise<Property> => {
-  if (!isSupabaseConfigured) {
-    const listing = await toLocalProperty(draft, existing.id, existing)
-    upsertLocalListing(listing)
-    return listing
-  }
-
   ensureConfigured()
 
   const { urls, uploadedPaths } = await uploadListingPhotos(
@@ -440,7 +296,7 @@ export const updateProperty = async (
   }
 
   const { data, error } = await supabase
-    .from('properties')
+    .from(PROPERTIES_TABLE)
     .update(update)
     .eq('id', existing.id)
     .eq('seller_id', sellerId)
@@ -491,17 +347,10 @@ export const deleteProperty = async (
   property: Property,
   sellerId: string,
 ) => {
-  if (!isSupabaseConfigured) {
-    writeLocalListings(
-      readLocalListings().filter((listing) => listing.id !== property.id),
-    )
-    return
-  }
-
   ensureConfigured()
 
   const { error } = await supabase
-    .from('properties')
+    .from(PROPERTIES_TABLE)
     .delete()
     .eq('id', property.id)
     .eq('seller_id', sellerId)
@@ -516,25 +365,11 @@ export const setPropertySold = async (
   sellerId: string,
   previousStatus: Exclude<PropertyStatus, 'terjual'>,
 ) => {
-  if (!isSupabaseConfigured) {
-    const listings = readLocalListings()
-    const current = listings.find((listing) => listing.id === property.id) ?? property
-    const updated: Property = {
-      ...current,
-      status: sold ? 'terjual' : previousStatus,
-      is_sold: sold,
-    }
-    writeLocalListings(
-      listings.map((listing) => (listing.id === property.id ? updated : listing)),
-    )
-    return updated
-  }
-
   ensureConfigured()
 
   const status: PropertyStatus = sold ? 'terjual' : previousStatus
   const { data, error } = await supabase
-    .from('properties')
+    .from(PROPERTIES_TABLE)
     .update({ status, is_sold: sold })
     .eq('id', property.id)
     .eq('seller_id', sellerId)

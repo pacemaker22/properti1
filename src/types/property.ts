@@ -8,6 +8,12 @@ export type PropertyType =
   | 'lainnya'
 export type PropertyStatus = 'dijual' | 'disewa' | 'terjual'
 
+/**
+ * Moderation status of a listing. Sellers insert `pending`; only the admin panel
+ * may approve it. Buyer pages (home, detail, favorites) read `approved` only.
+ */
+export type ListingModerationStatus = 'pending' | 'approved' | 'rejected'
+
 export interface Property {
   id: string
   title: string
@@ -33,6 +39,8 @@ export interface Property {
   whatsapp: string
   private_address?: string
   seller_id?: string | null
+  /** Moderation status: only `approved` listings are public. */
+  admin_status: ListingModerationStatus
   is_sold: boolean
   is_featured: boolean
   view_count: number

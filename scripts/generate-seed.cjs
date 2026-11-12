@@ -34,6 +34,7 @@ const columns = [
   'is_featured',
   'view_count',
   'created_at',
+  'admin_status',
 ]
 
 const rows = properties.map((property) => {
@@ -63,6 +64,7 @@ const rows = properties.map((property) => {
     property.is_sold,
     property.is_featured,
     property.view_count,
+    quote('approved'),
     quote(property.created_at),
   ]
 

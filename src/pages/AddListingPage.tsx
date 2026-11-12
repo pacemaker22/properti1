@@ -379,13 +379,19 @@ export function AddListingPage() {
             <CheckCircle2 size={32} aria-hidden="true" />
           </span>
           <h1 className="mt-5 text-2xl font-bold text-navy sm:text-3xl">
-            {editingListing ? 'Iklan berhasil diperbarui!' : 'Iklan berhasil diterbitkan!'}
+            {editingListing ? 'Iklan berhasil diperbarui!' : 'Iklan berhasil dikirim!'}
           </h1>
           <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-text-grey">
             {editingListing
               ? 'Perubahan pada iklan Anda sudah tersimpan di Supabase.'
-              : 'Iklan Anda sudah tampil di beranda dan siap dilihat pembeli.'}
+              : 'Iklan Anda tersimpan dengan status menunggu. Tim properti1.com akan meninjau sebelum tayang di beranda.'}
           </p>
+          {!editingListing && (
+            <p className="mx-auto mt-3 inline-flex max-w-md items-center justify-center gap-2 rounded-xl bg-slate-100 px-4 py-3 text-sm font-bold leading-6 text-navy">
+              <ShieldCheck size={17} className="shrink-0 text-primary-600" aria-hidden="true" />
+              Listing menunggu persetujuan admin
+            </p>
+          )}
           <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
             <Link to={`/properti/${publishedId}`} className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-primary-500 px-5 text-sm font-bold text-white transition hover:bg-primary-600">
               Lihat Detail Iklan
