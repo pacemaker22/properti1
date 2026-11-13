@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useListings } from './listings'
 import { useAuth } from './auth'
+import { useNotices } from './notices'
 import { isSupabaseConfigured, supabase } from './supabase'
 
 /** Sign-in prompt shown when a guest taps the heart. */
@@ -8,10 +9,9 @@ export const FAVORITE_LOGIN_PROMPT = 'Login untuk menyimpan favorit'
 const FAVORITES_TABLE = 'favorites'
 const FAVORITE_SAVE_MESSAGE = 'Gagal menyimpan favorit. Silakan coba lagi.'
 const FAVORITE_REMOVE_MESSAGE = 'Gagal menghapus favorit. Silakan coba lagi.'
-
-/** 42501 is Postgres "insufficient_privilege"; RLS reports it too. */
-const isPermissionDenied = (writeError: { code?: string } | null): boolean =>
-  writeError?.code === '42501'
+/** Buyer-facing confirmation once the row is accepted; a console log is not UI. */
+const FAVORITE_SAVED_TOAST = 'Favorit disimpan'
+const FAVORITE_REMOVED_TOAST = 'Favorit dihapus'
 
 /** Loads the signed-in buyer's hearts. RLS returns only his own rows. */
 const loadFavorites = async (userId: string): Promise<string[]> => {
@@ -41,7 +41,8 @@ const FavoritesContext = createContext<FavoritesContextValue | null>(null)
 
 export function FavoritesProvider({ children }: { children: ReactNode }) {
   const { listings, loading, error } = useListings()
-  const { user, authLoading, openAuthModal } = useAuth()
+  const { user, authLoading } = useAuth()
+  const { requireLogin, toFriendlyMessage, notify, notifyError } = useNotices()
   const [favoriteIds, setFavoriteIds] = useState<string[]>([])
   const userId = user?.id ?? null
   const listingIds = useMemo(
@@ -79,10 +80,8 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
   }, [listingIds, loading, error])
   const toggleFavorite = useCallback(
     (propertyId: string) => {
-      if (!user) {
-        openAuthModal('login')
-        return
-      }
+      // Guests get the prompt toast plus the auth modal, and nothing is written.
+      if (!requireLogin(FAVORITE_LOGIN_PROMPT) || !user) return
 
       const saved = favoriteIds.includes(propertyId)
 
@@ -96,7 +95,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
 
       void request.then(({ error: writeError }) => {
         if (!writeError) {
-          console.info(saved ? FAVORITE_REMOVE_MESSAGE : FAVORITE_SAVE_MESSAGE)
+          notify(saved ? FAVORITE_REMOVED_TOAST : FAVORITE_SAVED_TOAST)
           return
         }
 
@@ -105,12 +104,13 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
           saved ? [...current, propertyId] : current.filter((id) => id !== propertyId),
         )
 
-        if (!isPermissionDenied(writeError)) {
-          console.warn('[favorites] Gagal memperbarui favorit:', writeError.message)
-        }
+        // 42501 becomes "Akun Anda belum memiliki izin...", never raw Postgres text.
+        notifyError(
+          toFriendlyMessage(writeError, saved ? FAVORITE_REMOVE_MESSAGE : FAVORITE_SAVE_MESSAGE),
+        )
       })
     },
-    [favoriteIds, user, openAuthModal],
+    [favoriteIds, user, requireLogin, toFriendlyMessage, notify, notifyError],
   )
 
   const value = useMemo<FavoritesContextValue>(

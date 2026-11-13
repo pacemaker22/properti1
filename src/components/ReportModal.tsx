@@ -116,11 +116,12 @@ export function ReportModal({ propertyId, title, url, onClose }: ReportModalProp
       const result = await submitPropertyReport(propertyId, reason, details.trim())
 
       if (!result.success) {
-        if (result.error) {
-          setError(toFriendlyMessage(result.error, REPORT_FAILED_MESSAGE))
-        } else {
-          setError(REPORT_FAILED_MESSAGE)
-        }
+        // 42501, RLS and constraint hits all leave through translate(), so the panel
+        // reads "Akun Anda belum memiliki izin..." or a reason-specific line, never
+        // the raw Postgres sentence.
+        const failure = toFriendlyMessage(result.error, REPORT_FAILED_MESSAGE)
+        setError(failure)
+        if (!result.error) notifyError(failure)
         return
       }
 
@@ -128,7 +129,9 @@ export function ReportModal({ propertyId, title, url, onClose }: ReportModalProp
       notify(REPORT_SUCCESS_MESSAGE)
       closeTimer.current = window.setTimeout(onClose, 1600)
     } catch (caughtError) {
-      setError(toFriendlyMessage(caughtError, REPORT_FAILED_MESSAGE))
+      const failure = toFriendlyMessage(caughtError, REPORT_FAILED_MESSAGE)
+      setError(failure)
+      notifyError(failure)
     } finally {
       setSubmitting(false)
     }

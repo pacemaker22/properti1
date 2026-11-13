@@ -146,19 +146,27 @@ export function NoticesProvider({ children }: { children: ReactNode }) {
     [],
   )
 
+  /**
+   * The "please sign in" toast outlives the auth modal: signing in must not wipe
+   * an error toast (a refused favorite / report) that the buyer has not read yet.
+   */
   const requireLogin = useCallback(
     (message: string) => {
-      if (user) {
-        window.clearTimeout(timer.current)
-        setNotice(null)
-        return true
-      }
+      if (user) return true
       show('info', message)
       openAuthModal('login')
       return false
     },
     [user, show, openAuthModal],
   )
+
+  // A login prompt is only useful while the buyer is a guest; drop it (and only it)
+  // once the session exists so it does not sit next to the toast of the real action.
+  useEffect(() => {
+    if (!user || notice?.tone !== 'info') return
+    window.clearTimeout(timer.current)
+    setNotice(null)
+  }, [user, notice])
 
   const value = useMemo<NoticesContextValue>(
     () => ({ requireLogin, toFriendlyMessage, notify, notifyError }),
