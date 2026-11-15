@@ -1,7 +1,7 @@
 # properti1.com
 
 Platform jual-beli properti di Indonesia: cari rumah, apartemen, tanah, dan ruko,
-lalu **langsung chat WhatsApp dengan penjual** â€” tanpa daftar akun untuk pembeli.
+lalu **langsung chat WhatsApp dengan penjual** tanpa daftar akun untuk pembeli.
 
 Seluruh antarmuka pengguna menggunakan Bahasa Indonesia. Komentar dan penamaan
 kode menggunakan Bahasa Inggris.
@@ -12,7 +12,7 @@ kode menggunakan Bahasa Inggris.
 
 ### Pembeli
 - Hero pencarian + filter cepat (Rumah, Apartemen, Tanah, Ruko, Disewa)
-- Filter lengkap: Kota, Tipe, Harga, Kamar Tidur, Status â€” dapat dikombinasikan
+- Filter lengkap: Kota, Tipe, Harga, Kamar Tidur, Status dapat dikombinasikan
 - Urutkan: Terbaru, Termurah, Termahal, Terpopuler
 - Kartu listing: harga (format Rupiah), judul 2 baris, lokasi, spesifikasi, badge
   Baru (kurang dari 7 hari), dan overlay `TERJUAL`
@@ -24,7 +24,7 @@ kode menggunakan Bahasa Inggris.
 - "Properti Serupa" di halaman detail
 
 ### Penjual
-- Pasang iklan gratis: 1â€“8 foto, drag & drop, foto pertama jadi sampul
+- Pasang iklan gratis: 8 foto, drag & drop, foto pertama jadi sampul
 - Iklan Saya: inventaris pribadi penjual, edit, hapus, tandai Terjual
 - Alamat lengkap bersifat privat: hanya pemilik iklan yang dapat melihatnya,
   pembeli hanya melihat kecamatan dan kota
@@ -111,7 +111,7 @@ Panel admin belum dibangun. Selama belum ada, setujui iklan manual:
 update public.properties set admin_status = 'approved' where id = '<uuid-iklan>';
 ```
 
-1. `supabase/migrations/20261110000000_step3_supabase.sql` â€” tabel `properties`,
+1. `supabase/migrations/20261110000000_step3_supabase.sql`tabel `properties`,
    `property_private_details`, bucket `property-photos`, dan RLS.
 
 ---
@@ -160,7 +160,7 @@ vercel.json                # Rewrite SPA (deep link)
 ```
 
 
-2. `supabase/seed.sql` â€” 12 listing contoh (opsional).
+2. `supabase/seed.sql` 12 listing contoh (opsional).
 
 Skema dan kebijakan RLS saat ini masih **milik Step 3**. Rancangan peran admin
 
@@ -179,7 +179,7 @@ Skema dan kebijakan RLS saat ini masih **milik Step 3**. Rancangan peran admin
    | `VITE_SUPABASE_ANON_KEY` | anon / publishable key |
    | `VITE_SITE_URL` | `https://properti1.com` |
 
-   Jangan pernah menaruh service-role key di variabel `VITE_*` â€” nilainya
+   Jangan pernah menaruh service-role key di variabel `VITE_*` nilainya
    ikut terkirim ke peramban.
 4. Deploy, lalu tambahkan domain produksi di **Settings > Domains**.
 
