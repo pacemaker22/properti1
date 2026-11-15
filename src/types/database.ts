@@ -34,6 +34,10 @@ export type PropertyRow = {
   agent_photo: string
   view_count: number
   admin_status: ListingModerationStatus
+  /** Review trail written by the admin panel (20261113000000_admin_security.sql). */
+  reviewed_by?: string | null
+  reviewed_at?: string | null
+  review_note?: string
 }
 
 export type PropertyInsert = {
@@ -65,6 +69,9 @@ export type PropertyInsert = {
   agent_photo?: string
   view_count?: number
   admin_status?: ListingModerationStatus
+  reviewed_by?: string | null
+  reviewed_at?: string | null
+  review_note?: string
 }
 
 export type PropertyUpdate = Partial<Omit<PropertyInsert, 'id'>>
@@ -104,10 +111,51 @@ export type ReportRow = {
   reporter_email: string
   reason: ReportReason
   reason_note: string
-  status: 'baru' | 'diterima' | 'ditolak'
+  status: 'baru' | 'pending' | 'selesai' | 'ditolak'
   reviewed_by: string | null
   reviewed_at: string | null
   created_at: string
+}
+
+/**
+ * One approve/reject decision for a listing, stored in property_moderation
+ * (live schema: id, property_id, admin_id, action, review_note, created_at).
+ * The moderation queue is every property that has no row here yet.
+ */
+export type ModerationAction = 'approved' | 'rejected'
+
+export type PropertyModerationRow = {
+  id: string
+  property_id: string
+  admin_id: string
+  action: ModerationAction
+  review_note: string
+  created_at: string
+}
+
+export type PropertyModerationInsert = {
+  id?: string
+  property_id: string
+  admin_id: string
+  action: ModerationAction
+  review_note?: string
+  created_at?: string
+}
+
+/**
+ * One row per auth user (migration 20261113000000_admin_security.sql).
+ * `is_admin` is the single source of truth for the admin role. It is SELECT-only
+ * for app roles - no column grant exists - so the type deliberately has no way
+ * to write it; profiles are created by the auth trigger, never by the client.
+ */
+export type ProfileRow = {
+  id: string
+  email: string
+  full_name: string
+  phone: string
+  is_admin: boolean
+  created_at: string
+  updated_at: string
 }
 
 export type Database = {
@@ -164,6 +212,41 @@ export type Database = {
           status?: ReportRow['status']
           reviewed_by?: string | null
           reviewed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'reports_property_id_fkey'
+            columns: ['property_id']
+            isOneToOne: false
+            referencedRelation: 'properties'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      property_moderation: {
+        Row: PropertyModerationRow
+        Insert: PropertyModerationInsert
+        Update: {
+          review_note?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: ProfileRow
+        // Profile rows are created by the auth trigger; the client never inserts.
+        Insert: {
+          id: string
+          email?: string
+          full_name?: string
+          phone?: string
+          created_at?: string
+          updated_at?: string
+        }
+        // Only full_name / phone are granted to app roles - is_admin is immutable.
+        Update: {
+          full_name?: string
+          phone?: string
+          updated_at?: string
         }
         Relationships: []
       }

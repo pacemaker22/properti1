@@ -1,0 +1,5 @@
+﻿
+> properti1-com@0.1.0 typecheck
+> tsc -b --pretty false
+
+TYPECHECK_EXIT:0
