@@ -1,4 +1,0 @@
-﻿src/pages/AdminPage.tsx(510,5): error TS1128: Declaration or statement expected.
-src/pages/AdminPage.tsx(635,6): error TS17008: JSX element 'div' has no corresponding closing tag.
-src/pages/AdminPage.tsx(668,1): error TS1005: ')' expected.
-src/pages/AdminPage.tsx(668,1): error TS1005: '</' expected.
